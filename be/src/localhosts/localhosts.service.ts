@@ -152,9 +152,6 @@ export class LocalhostsService {
     const { verification_code } = verifyLocalhostDto;
     const localhost = await this.localhostModel.findById(id).exec();
 
-    //console.log("logcahost<<<<<<-->",localhost.password);
-    
-
     if (!localhost) {
       return 'Local does not exist';
     }
@@ -169,22 +166,17 @@ export class LocalhostsService {
     const currentTime = new Date();
     const expirationTimeInMinutes = 10;
     const expirationTime = new Date(
-      localhost.verification_code_created_at.getTime() +
-        expirationTimeInMinutes * 60000,
+    localhost.verification_code_created_at.getTime() +
+    expirationTimeInMinutes * 60000,
     );
 
     if (currentTime > expirationTime) {
       return 'Verification code has expired';
     }
 
-    // const password = generatePassword();
-    //const password = verifyLocalhostDto.Password;
-    
-    //const hashedPassword = hashPassword(password);
 if(localhost?.password){
     localhost.code_verified = true;
     localhost.code_verified_at = new Date();
-    //localhost.password = hashedPassword;
     await localhost.save();
     return {
       _id: localhost._id,
@@ -194,12 +186,8 @@ if(localhost?.password){
     };
   }
   else{
-    //const password = generatePassword();
-   // const hashedPassword = hashPassword(password);
-
     localhost.code_verified = true;
     localhost.code_verified_at = new Date();
-    //localhost.password = hashedPassword;
     await localhost.save();
     return {
       _id: localhost._id,
@@ -207,10 +195,7 @@ if(localhost?.password){
       code_verified: true,
       password: undefined
     };
-
   }
-
-
   }
 
   async resendVerificationCode(id) {
@@ -332,7 +317,7 @@ if(localhost?.password){
                   <ul>
                       <li><strong>Localhost Name:</strong> ${localh.name}</li>
                   </ul>
-                  <a href="https://m59media.com/customer/negotiate?token=${accessToken}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #ffffff; text-decoration: none;">Negotiate</a>
+                  <a href="http://localhost:3003/customer/negotiate?token=${accessToken}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #ffffff; text-decoration: none;">Negotiate</a>
                   <p>If you have any questions or concerns, please contact us.</p>
                   <p>Thank you!</p>
               </div>

@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsNumber, IsString, MaxLength } from "class-validator";
+import { IsDate, IsEmail, IsNotEmpty, IsNumber, IsString, MaxLength } from "class-validator";
 
 export class CreateBidDto {
     @IsString()
@@ -31,4 +31,7 @@ export class CreateBidDto {
     @IsNotEmpty()
     @IsString()
     special_instructions: string;
+
+    checkInDate: any
+  
 }

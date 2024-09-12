@@ -1,7 +1,7 @@
 "use client";
 
 import { useForm, SubmitHandler } from "react-hook-form";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios, { AxiosResponse } from "axios";
 import MaxWidthWrapper from "@/components/MaxWidthWrapper";
 import { Label } from "@/components/ui/label";
@@ -22,6 +22,21 @@ import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { baseUrl } from "@/config/const";
 
+import { useLoadScript } from '@react-google-maps/api';
+
+// import { Libraries } from '@react-google-maps/api';
+const libraries: any = ['places'];
+// Define the types for place details
+interface PlaceDetails {
+  formattedAddress?: string;
+  // latitude?: number;
+  // longitude?: number;
+  // placeId?: string;
+  // plusCode?: string;
+}
+
+
+
 interface IFormInput {
   min_price_per_night: number;
   payment_option: number;
@@ -37,6 +52,8 @@ interface Payment_Option {
   label: string;
   value: string;
 }
+// const libraries: string[] = ['places'];
+
 
 const Page: React.FC = () => {
   const router = useRouter();
@@ -46,6 +63,47 @@ const Page: React.FC = () => {
     reset,
     formState: { errors },
   } = useForm<IFormInput>();
+
+  // google map
+
+  const [placeDetails, setPlaceDetails] = useState<PlaceDetails | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const { isLoaded } = useLoadScript({
+    googleMapsApiKey: 'AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKartNGg', // Replace with your API key
+    libraries,
+  });
+
+  useEffect(() => {
+    if (isLoaded && inputRef.current) {
+      const autocomplete = new window.google.maps.places.Autocomplete(inputRef.current);
+
+      autocomplete.addListener('place_changed', () => {
+        const place = autocomplete.getPlace();
+        handlePlaceSelected(place);
+      });
+    }
+  }, [isLoaded]);
+
+  const handlePlaceSelected = (place: google.maps.places.PlaceResult) => {
+    if (place.formatted_address) {
+      console.log('Formatted Address:', place.formatted_address);
+    }
+
+    // Save place details in state
+    setPlaceDetails({
+      formattedAddress: place.formatted_address || undefined,
+      // latitude: place.geometry?.location.lat() || undefined,
+      // longitude: place.geometry?.location.lng() || undefined,
+      // placeId: place.place_id || undefined,
+      // plusCode: place.plus_code?.compound_code || 'N/A',
+    });
+  };
+
+
+  // End ............ 
+
+
   const [images, setImages] = useState<string[]>([]);
 
   const [loading, setLoading] = useState(false);
@@ -141,7 +199,7 @@ const Page: React.FC = () => {
       try {
         setLoading(true);
         const res: AxiosResponse = await axios.post(
-          baseUrl+"/rooms",
+          baseUrl + "/rooms",
           formData,
           {
             headers: {
@@ -184,7 +242,7 @@ const Page: React.FC = () => {
   };
 
   const getAllCities = async () => {
-    const res = await axios.get(baseUrl+"/cities");
+    const res = await axios.get(baseUrl + "/cities");
     if (res?.data?.data) {
       setCities(res.data.data);
     }
@@ -219,20 +277,19 @@ const Page: React.FC = () => {
                   <div className="flex flex-col gap-6">
                     <div className="relative flex flex-col gap-1 w-full">
                       <Label
-                        className={`${
-                          dataErrors?.min_price_per_night && "text-red-600"
-                        }`}
+                        className={`${dataErrors?.min_price_per_night && "text-red-600"
+                          }`}
                       >
-                        Min Price per Night
+                        Public Price per Night
                       </Label>
                       <Input
                         name="min_price_per_night"
-                        className={`${
-                          dataErrors?.min_price_per_night && "border-red-600"
-                        }`}
+                        className={`${dataErrors?.min_price_per_night && "border-red-600"
+                          }`}
                         type="number"
                         value={roomData?.min_price_per_night}
                         onChange={handleChange}
+                        placeholder="your standard room rate"
                       />
                       {dataErrors?.min_price_per_night && (
                         <p className="text-red-600 text-xs italic">
@@ -243,9 +300,8 @@ const Page: React.FC = () => {
 
                     <div className="relative flex flex-col gap-1 w-full">
                       <Label
-                        className={`${
-                          dataErrors?.payment_option && "text-red-600"
-                        }`}
+                        className={`${dataErrors?.payment_option && "text-red-600"
+                          }`}
                       >
                         Payment Option
                       </Label>
@@ -258,14 +314,14 @@ const Page: React.FC = () => {
                           >
                             {paymentOptions?.length > 0
                               ? (() => {
-                                  const matched = paymentOptions.find(
-                                    (item) =>
-                                      item.value === roomData.payment_option
-                                  );
-                                  return matched
-                                    ? matched.label
-                                    : "Select Payment Option";
-                                })()
+                                const matched = paymentOptions.find(
+                                  (item) =>
+                                    item.value === roomData.payment_option
+                                );
+                                return matched
+                                  ? matched.label
+                                  : "Select Payment Option";
+                              })()
                               : "Select Payment Option"}
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
@@ -324,13 +380,13 @@ const Page: React.FC = () => {
                           >
                             {cities?.length > 0
                               ? (() => {
-                                  const matchedCity = cities.find(
-                                    (item) => item._id === roomData.city
-                                  );
-                                  return matchedCity
-                                    ? matchedCity.city_name
-                                    : "Select City";
-                                })()
+                                const matchedCity = cities.find(
+                                  (item) => item._id === roomData.city
+                                );
+                                return matchedCity
+                                  ? matchedCity.city_name
+                                  : "Select City";
+                              })()
                               : "Select City"}
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
@@ -375,39 +431,40 @@ const Page: React.FC = () => {
 
                     <div className="relative flex flex-col gap-1 w-full">
                       <Label
-                        className={`${dataErrors?.billing && "text-red-600"}`}
-                                        >
-                      Room Service
-                    
+                      >
+                        Room Address
                       </Label>
                       <Input
-                        name="billing"
-                        className={`${dataErrors?.billing && "border-red-600"}`}
+                        ref={inputRef}
                         type="text"
-                        value={roomData?.billing}
-                        onChange={handleChange}
-                        placeholder="24/7" 
+                        placeholder="Enter a location"
+                        style={{ width: '100%', padding: '10px', boxSizing: 'border-box' }}
                       />
-                      {dataErrors?.billing && (
-                        <p className="text-red-600 text-xs italic">
-                          {dataErrors?.billing}
-                        </p>
+
+                      {placeDetails && (
+                        <div style={{ marginTop: '20px' }}>
+                          <h2>Selected Place Details:</h2>
+                          <p><strong>Address:</strong> {placeDetails.formattedAddress}</p>
+                          {/* <p><strong>Latitude:</strong> {placeDetails.latitude}</p>
+                              <p><strong>Longitude:</strong> {placeDetails.longitude}</p>
+                              <p><strong>Place ID:</strong> {placeDetails.placeId}</p>
+                          <p><strong>Plus Code:</strong> {placeDetails.plusCode}</p> */}
+                        </div>
                       )}
+                    
                     </div>
 
                     <div className="relative flex flex-col gap-1 w-full">
                       <Label
-                        className={`${
-                          dataErrors?.description && "text-red-600"
-                        }`}
+                        className={`${dataErrors?.description && "text-red-600"
+                          }`}
                       >
                         Description of Room
                       </Label>
                       <Input
                         name="description"
-                        className={`${
-                          dataErrors?.description && "border-red-600"
-                        }`}
+                        className={`${dataErrors?.description && "border-red-600"
+                          }`}
                         type="text"
                         value={roomData?.description}
                         onChange={handleChange}
@@ -418,6 +475,30 @@ const Page: React.FC = () => {
                         </p>
                       )}
                     </div>
+
+                    <div className="relative flex flex-col gap-1 w-full">
+                      <Label
+                        className={`${dataErrors?.billing && "text-red-600"}`}
+                      >
+                        Room Amenities
+
+                      </Label>
+                      <Input
+                        name="billing"
+                        className={`${dataErrors?.billing && "border-red-600"}`}
+                        type="text"
+                        value={roomData?.billing}
+                        onChange={handleChange}
+                        placeholder="Breakfast, pool, safety box, room service etc…"
+                      />
+                      {dataErrors?.billing && (
+                        <p className="text-red-600 text-xs italic">
+                          {dataErrors?.billing}
+                        </p>
+                      )}
+                    </div>
+
+
 
                     <div className="relative flex flex-col gap-1 w-full">
                       <div>

@@ -165,9 +165,9 @@ const Page = () => {
 
               <div className="relative mt-4 h-full flex flex-col justify-between">
                 <div className="flex flex-col gap-6">
-                  <div className="relative flex flex-col gap-1 w-full">
-                    <Label className={`${errors?.name && "text-red-600"}`}>
-                      Name
+                  <div className="relative flex flex-col gap-1 w-full ">
+                    <Label className={`pl-2 ${errors?.name && "text-red-600"}`}>
+                      Your Local Host Name
                     </Label>
                     <Input
                       name="name"
@@ -184,8 +184,8 @@ const Page = () => {
                   </div>
 
                   <div className="relative flex flex-col gap-1 w-full">
-                    <Label className={`${errors?.email && "text-red-600"}`}>
-                      Email
+                    <Label className={`pl-2 ${errors?.email && "text-red-600"}`}>
+                     Your Email
                     </Label>
                     <Input
                       name="email"
@@ -202,8 +202,8 @@ const Page = () => {
                   </div>
 
                   <div className="relative flex flex-col gap-1 w-full">
-                    <Label className={`${errors?.city && "text-red-600"}`}>
-                      City
+                    <Label className={`pl-2 ${errors?.city && "text-red-600"}`}>
+                    In What City can you Host?
                     </Label>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -265,7 +265,7 @@ const Page = () => {
 
 
                   <div className="relative flex flex-col gap-1 w-full">
-                    <Label className={`${errors?.password && "text-red-600"}`}>
+                    <Label className={`pl-2 ${errors?.password && "text-red-600"}`}>
                       Password
                     </Label>
                     <Input

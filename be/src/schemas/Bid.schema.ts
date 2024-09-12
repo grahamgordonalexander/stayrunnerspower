@@ -19,6 +19,9 @@ export class Bid {
   @Prop({ required: true })
   price_willing_to_pay: number;
 
+  @Prop({ required: true })
+  checkInDate: string;
+
   @Prop()
   special_instructions: string;
 

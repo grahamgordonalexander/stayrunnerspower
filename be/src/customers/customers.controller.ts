@@ -10,6 +10,7 @@ export class CustomersController {
 
   @Post('/create-bid')
   async createBid(@Body() createBidDto: CreateBidDto, @Res() res: Response) {
+    console.log('Received bid:', createBidDto);
     const isValidCity = mongoose.Types.ObjectId.isValid(createBidDto.city);
     if (!isValidCity) throw new HttpException('City does not exist', 400);
     

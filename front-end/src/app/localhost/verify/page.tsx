@@ -23,7 +23,7 @@ import { baseUrl } from "@/config/const";
 
 const Page = () => {
   const userData = getUserDataFromLocalStorage();
-  const [seconds, setSeconds] = useState(60);
+  const [seconds, setSeconds] = useState(120);
   const router = useRouter();
   const [verificationCode, setVerificationCode] = useState("");
 

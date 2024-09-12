@@ -29,7 +29,8 @@ function findotherObject(bitId, userRole) {
   return null;
 }
 const groq = new Groq({
-  apiKey: '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',
+  // apiKey: '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',
+  apiKey: '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',
 });
 
 function removeSocketById(myArray, socketIdToRemove) {

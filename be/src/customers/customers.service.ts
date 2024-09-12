@@ -21,15 +21,21 @@ export class CustomersService {
   ) {}
 
   async createBid(createBidDto: CreateBidDto) {
-    const { city } = createBidDto
-    const findCity = await this.cityModel.findById(city).exec();
+    const { city } = createBidDto;
+
+    console.log("check date type", createBidDto)
+    const findCity = await this.cityModel.findById(city); //.exec();
+
     if (!findCity) {
       return 'City does not exist';
     }
 
-    const customer = await this.customerModel
-      .findOne({ email: createBidDto.email })
-      .exec();
+    console.log("Finding city", findCity)
+
+    const customer = await this.customerModel.findOne({
+      email: createBidDto.email,
+    });
+    //.exec();
 
     let _id;
     let CustomerName;
@@ -48,8 +54,11 @@ export class CustomersService {
       _id = customer._id;
       CustomerName = customer.name;
     }
-
-    const { beds, people, nights, price_willing_to_pay, special_instructions } =
+    if(createBidDto.checkInDate){
+      //slice date to only get the date part 
+      createBidDto.checkInDate = createBidDto.checkInDate.slice(0, 10)
+    }
+    const { beds, people, nights, price_willing_to_pay, special_instructions, checkInDate } =
       createBidDto;
     const createdBid = new this.bidModel({
       customer: _id,
@@ -58,16 +67,18 @@ export class CustomersService {
       nights,
       price_willing_to_pay,
       special_instructions,
+      checkInDate,
     });
     const savedBid = await createdBid.save();
 
     if (savedBid) {
-      const localhosts = await this.localhostModel
-        .find({
+      const localhosts = await this.localhostModel.find({
           city: createBidDto.city,
           code_verified: true,
-        })
-        .exec();
+      });
+
+      // .exec();
+      //todo save bulk
       const requestsPromises = localhosts.map((localhost) =>
         this.roomRequestModel.create({
           bid: savedBid._id,
@@ -76,39 +87,6 @@ export class CustomersService {
       );
       await Promise.all(requestsPromises);
 
-<<<<<<< HEAD
-      const emailsPromises = localhosts.map((localhost) =>
-        this.emailService.sendEmail(
-          localhost.email,
-          'A New Room Request - Last Minute Booking',
-          `
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>New Room Request</title>
-            </head>
-            <body>
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                    <h2>A New Room Request</h2>
-                    <p>Hello,</p>
-                    <p>A new room request has been received:</p>
-                    <ul>
-                        <li><strong>Name:</strong> ${CustomerName}</li>
-                        <li><strong>City:</strong> ${findCity.city_name}</li>
-                        <li><strong>Beds:</strong> ${beds}</li>
-                        <li><strong>People:</strong> ${people}</li>
-                        <li><strong>Nights:</strong> ${nights}</li>
-                        <li><strong>Special Instructions:</strong> ${special_instructions}</li>
-                    </ul>
-                    <a href="https://m59media.com/negotiate?id=${savedBid._id}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #ffffff; text-decoration: none;">Negotiate Room Stay</a>
-                    <p>If you have any questions or concerns, please contact us.</p>
-                    <p>Thank you!</p>
-                </div>
-            </body>
-            </html>
-=======
       const emailsPromises = localhosts.map((localhost) => {
         try {
           this.emailService.sendEmail(
@@ -132,10 +110,12 @@ export class CustomersService {
                           <li><strong>City:</strong> ${findCity.city_name}</li>
                           <li><strong>Beds:</strong> ${beds}</li>
                           <li><strong>People:</strong> ${people}</li>
+                          <li><strong>Checkin Date:</strong> ${checkInDate}</li>
                           <li><strong>Nights:</strong> ${nights}</li>
+                           <li><strong>Price Willling to Pay:</strong> ${price_willing_to_pay}</li>
                           <li><strong>Special Instructions:</strong> ${special_instructions}</li>
                       </ul>
-                      <a href="https://m59media.com/negotiate?id=${savedBid._id}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #ffffff; text-decoration: none;">Negotiate Room Stay</a>
+                      <a href="http://localhost:3003/negotiate?id=${savedBid._id}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #ffffff; text-decoration: none;">Negotiate Room Stay</a>
                       <p>If you have any questions or concerns, please contact us.</p>
                       <p>Thank you!</p>
                   </div>
@@ -145,10 +125,9 @@ export class CustomersService {
             `,
           );
         } catch (error) {
-          console.log('errpr in sending email', error);
+          console.log('error in sending email', error);
         }
       });
->>>>>>> a8b88b4cfe48527302a586ec0a464186de5a213f
 
       await Promise.all(emailsPromises);
       console.log('createBidDto.email', createBidDto.email);
@@ -169,17 +148,30 @@ export class CustomersService {
               <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                   <h2>Confirmation</h2>
                   <p>Thank you,</p>
-                  <p>This Email confirms that you will receive an email if a Room is Available.</p>
+                  <p>This Email confirms that you will receive an email if a Room is Available in <strong>${findCity.city_name}</strong>.</p>
+                   <ul>
+                          <li><strong>Name:</strong> ${CustomerName}</li>
+                          <li><strong>Beds:</strong> ${beds}</li>
+                          <li><strong>People:</strong> ${people}</li>
+                          <li><strong>Checkin Date:</strong> ${checkInDate}</li>
+                          <li><strong>Nights:</strong> ${nights}</li>
+                          <li><strong>Price Willling to Pay:</strong> ${price_willing_to_pay}</li>
+                          <li><strong>Special Instructions:</strong> ${special_instructions}</li>
+                      </ul>
               </div>
           </body>
           </html>
 
-        `
+        `,
       );
+        console.log('email send response', resp);
+      } catch (error) {
+        console.log('send confirm email ERRoR', error);
+      }
 
       return savedBid;
     }
 
     return null;
-  }
+ } 
 }

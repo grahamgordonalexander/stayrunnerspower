@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { ArrowRight, Check, ChevronsUpDown, Loader2 } from "lucide-react";
+import { ArrowRight, Check, ChevronsUpDown, Fullscreen, Loader2 } from "lucide-react";
 import Link from "next/link";
 import {
   isEmpty,
@@ -27,6 +27,11 @@ import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { baseUrl } from "@/config/const";
 
+import DatePicker from "react-datepicker";
+
+import "react-datepicker/dist/react-datepicker.css";
+import { any } from "zod";
+
 interface City {
   _id: string;
   city_name: string;
@@ -34,6 +39,9 @@ interface City {
 
 export default function Home() {
   const router = useRouter();
+
+  // const [startDate, setStartDate] = useState<Date | null>(null);
+
   const [bidData, setBidData] = useState({
     name: "",
     email: "",
@@ -43,6 +51,7 @@ export default function Home() {
     nights: "",
     price_willing_to_pay: "",
     special_instructions: "",
+    checkInDate: null as Date | null,
   });
 
   const [dataErrors, setDataErrors] = useState({
@@ -54,12 +63,22 @@ export default function Home() {
     nights: "",
     price_willing_to_pay: "",
     special_instructions: "",
+    checkInDate : "",
   });
 
   const [cities, setCities] = useState<City[]>([]);
 
   const [loading, setLoading] = useState(false);
 
+  const handleChangeDate = (date: Date | null) => {
+    if (date) {
+      // const formattedDate = date.toISOString().split("T")[0];
+      // const convertDate = new Date(formattedDate.replace(/-/g, "/"));
+      setBidData({ ...bidData, checkInDate: date });
+    } else {
+      setBidData({ ...bidData, checkInDate: null });
+    }
+  }
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     if (name === "price_willing_to_pay" && !isValidPrice(value) && value !== "")
@@ -84,6 +103,7 @@ export default function Home() {
         nights: "",
         price_willing_to_pay: "",
         special_instructions: "",
+        checkInDate : "",
       };
     });
 
@@ -134,7 +154,19 @@ export default function Home() {
         };
       });
       hasError = true;
-    } else if (isEmpty(bidData?.nights)) {
+    }
+    else if ((bidData?.checkInDate) === null) {
+      toast.error("Please enter a valid Check-in date");
+      setDataErrors(() => {
+        return {
+          ...dataErrors,
+          checkInDate: "Please enter a valid Check-in date",
+        };
+      });
+      hasError = true;
+    }  
+    
+    else if (isEmpty(bidData?.nights)) {
       toast.error("Please enter a valid no of nights");
       setDataErrors(() => {
         return {
@@ -165,7 +197,7 @@ export default function Home() {
       try {
         setLoading(true);
         const res: AxiosResponse = await axios.post(
-          baseUrl+"/customers/create-bid",
+          baseUrl + "/customers/create-bid",
           bidData
         );
         if (res.status === 201) {
@@ -183,7 +215,7 @@ export default function Home() {
   };
 
   const getAllCities = async () => {
-    const res = await axios.get(baseUrl+"/cities");
+    const res = await axios.get(baseUrl + "/cities");
     if (res?.data?.data) {
       setCities(res.data.data);
     }
@@ -193,6 +225,10 @@ export default function Home() {
     getAllCities();
   }, []);
 
+
+
+  console.log("test data 1", bidData);
+  // console.log("test data 2",startDate);
   return (
     <div className="bg-slate-50 grainy-light">
       <section>
@@ -205,24 +241,22 @@ export default function Home() {
                 through LAST MINUTE LOCAL HOST
               </h1>
               <p className="mt-8 text-lg lg:pr-10 max-w-prose text-center lg:text-left text-balance md:text-wrap">
-                Discover your ideal stay with our easy room booking service.{" "}
-                <span className="font-semibold">Get the best rates </span>
-                and instant confirmation for your perfect getaway.
+                Get a great deal from a local host that want to fill <br /> their rooms in the last minute.
               </p>
 
               <ul className="mt-8 space-y-2 text-left font-medium flex flex-col items-center sm:items-start">
                 <div className="space-y-2">
                   <li className="flex gap-1.5 items-center text-left">
                     <Check className="h-5 w-5 shrink-0 text-green-600" />
-                    Air Conditioning
+                    negotiate rate
                   </li>
                   <li className="flex gap-1.5 items-center text-left">
                     <Check className="h-5 w-5 shrink-0 text-green-600" />5 year
-                    In-Room Safe
+                    pay on check-in
                   </li>
                   <li className="flex gap-1.5 items-center text-left">
                     <Check className="h-5 w-5 shrink-0 text-green-600" />
-                    Private Bathroom with Toiletries
+                    save on your room
                   </li>
                 </div>
               </ul>
@@ -234,7 +268,7 @@ export default function Home() {
                     href="/localhost/signup"
                     className={buttonVariants({
                       size: "sm",
-                      className: "sm:flex items-center gap-1",
+                      className: "sm:flex items-center gap-1   pl-6 pr-6",
                     })}
                   >
                     Become a local host
@@ -274,9 +308,8 @@ export default function Home() {
                           </Label>
                           <Input
                             name="name"
-                            className={`${
-                              dataErrors?.name && "border-red-600"
-                            }`}
+                            className={`${dataErrors?.name && "border-red-600"
+                              }`}
                             type="text"
                             value={bidData?.name}
                             onChange={handleChange}
@@ -296,9 +329,8 @@ export default function Home() {
                           </Label>
                           <Input
                             name="email"
-                            className={`${
-                              dataErrors?.email && "border-red-600"
-                            }`}
+                            className={`${dataErrors?.email && "border-red-600"
+                              }`}
                             type="email"
                             value={bidData?.email}
                             onChange={handleChange}
@@ -325,13 +357,13 @@ export default function Home() {
                               >
                                 {cities?.length > 0
                                   ? (() => {
-                                      const matchedCity = cities.find(
-                                        (item) => item._id === bidData.city
-                                      );
-                                      return matchedCity
-                                        ? matchedCity.city_name
-                                        : "Select City";
-                                    })()
+                                    const matchedCity = cities.find(
+                                      (item) => item._id === bidData.city
+                                    );
+                                    return matchedCity
+                                      ? matchedCity.city_name
+                                      : "Select City";
+                                  })()
                                   : "Select City"}
                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                               </Button>
@@ -378,17 +410,15 @@ export default function Home() {
                         <div className="flex gap-2">
                           <div className="relative flex flex-col gap-1 w-full">
                             <Label
-                              className={`${
-                                dataErrors?.beds && "text-red-600"
-                              }`}
+                              className={`${dataErrors?.beds && "text-red-600"
+                                }`}
                             >
                               How many beds?
                             </Label>
                             <Input
                               name="beds"
-                              className={`${
-                                dataErrors?.beds && "border-red-600"
-                              }`}
+                              className={`${dataErrors?.beds && "border-red-600"
+                                }`}
                               type="beds"
                               value={bidData?.beds}
                               onChange={handleChange}
@@ -402,17 +432,15 @@ export default function Home() {
 
                           <div className="relative flex flex-col gap-1 w-full">
                             <Label
-                              className={`${
-                                dataErrors?.people && "text-red-600"
-                              }`}
+                              className={`${dataErrors?.people && "text-red-600"
+                                }`}
                             >
                               How many people?
                             </Label>
                             <Input
                               name="people"
-                              className={`${
-                                dataErrors?.people && "border-red-600"
-                              }`}
+                              className={`${dataErrors?.people && "border-red-600"
+                                }`}
                               type="people"
                               value={bidData?.people}
                               onChange={handleChange}
@@ -425,19 +453,54 @@ export default function Home() {
                           </div>
                         </div>
 
+
+                        {/* add check in date field here */}
+
+                        <div className="relative flex flex-col gap-2 w-full">
+                          <Label
+                            className={`${dataErrors?.checkInDate && "text-red-600"
+                              }`}
+                          >
+                            Check In Date
+                          </Label>
+
+
+                          <div style={{ width: '100%' }}>
+
+                        
+                            <DatePicker
+                              placeholderText="Check In Date"
+                              selected={bidData?.checkInDate}
+                              onChange={(date) => {
+                                handleChangeDate(date);
+                              }
+                              }
+                              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                            />
+                          </div>
+
+                          {dataErrors?.checkInDate && (
+                            <p className="text-red-600 text-xs italic">
+                              {dataErrors?.checkInDate}
+                            </p>
+                          )}
+                        </div>
+
+
+
+
+
                         <div className="relative flex flex-col gap-1 w-full">
                           <Label
-                            className={`${
-                              dataErrors?.nights && "text-red-600"
-                            }`}
+                            className={`${dataErrors?.nights && "text-red-600"
+                              }`}
                           >
                             How many nights?
                           </Label>
                           <Input
                             name="nights"
-                            className={`${
-                              dataErrors?.nights && "border-red-600"
-                            }`}
+                            className={`${dataErrors?.nights && "border-red-600"
+                              }`}
                             type="nights"
                             value={bidData?.nights}
                             onChange={handleChange}
@@ -451,18 +514,16 @@ export default function Home() {
 
                         <div className="relative flex flex-col gap-1 w-full">
                           <Label
-                            className={`${
-                              dataErrors?.price_willing_to_pay && "text-red-600"
-                            }`}
+                            className={`${dataErrors?.price_willing_to_pay && "text-red-600"
+                              }`}
                           >
                             Price willing to pay?
                           </Label>
                           <Input
                             name="price_willing_to_pay"
-                            className={`${
-                              dataErrors?.price_willing_to_pay &&
+                            className={`${dataErrors?.price_willing_to_pay &&
                               "border-red-600"
-                            }`}
+                              }`}
                             type="price_willing_to_pay"
                             value={bidData?.price_willing_to_pay}
                             onChange={handleChange}
@@ -476,18 +537,16 @@ export default function Home() {
 
                         <div className="relative flex flex-col gap-1 w-full">
                           <Label
-                            className={`${
-                              dataErrors?.special_instructions && "text-red-600"
-                            }`}
+                            className={`${dataErrors?.special_instructions && "text-red-600"
+                              }`}
                           >
                             Special Instructions of Amenities
                           </Label>
                           <Input
                             name="special_instructions"
-                            className={`${
-                              dataErrors?.special_instructions &&
+                            className={`${dataErrors?.special_instructions &&
                               "border-red-600"
-                            }`}
+                              }`}
                             type="special_instructions"
                             value={bidData?.special_instructions}
                             onChange={handleChange}

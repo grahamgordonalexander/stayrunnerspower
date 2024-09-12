@@ -81,7 +81,7 @@ const Page = () => {
               className="absolute z-10 inset-x-0 bottom-0 h-12 bg-gradient-to-t from-white pointer-events-none"
             />
 
-            <div className="px-8 pb-12 pt-12">
+            <div className="px-8 pb-5 pt-12">
               <h2 className="tracking-tight font-bold text-xl">
                 Welcome to Last Minute Local Host
               </h2>
@@ -126,7 +126,7 @@ const Page = () => {
             </div>
           </ScrollArea>
 
-          <div className="w-full px-8 bg-white pb-6 rounded-md">
+          <div className="w-full px-8 bg-white pb-6 rounded-md" >
             <div className="w-full h-full flex justify-end items-center">
               <div className="w-full gap-6 items-center">
                 {/* <p className="font-medium whitespace-nowrap">
@@ -137,7 +137,9 @@ const Page = () => {
                   100
               )}
             </p> */}
-                <p className="text-sm text-gray-500">Login to Upload Picture</p>
+                   <p className="text-sm text-gray-500"><b>This is a system-generated password.<br/> You can change the password after logging in.</b></p>
+                <br/>
+                <p className="text-sm text-gray-500">Please Login to Upload Picture</p>
                 <p className="text-sm text-gray-500 mb-6">
                   Description of the Room
                 </p>

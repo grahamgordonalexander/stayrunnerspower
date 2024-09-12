@@ -193,7 +193,7 @@ useEffect(() => {
               </div>
             ))
           ) : (
-            <p>Data not Found</p>
+            <p>Please Add Room</p>
           )}
         </div>
       </MaxWidthWrapper>
