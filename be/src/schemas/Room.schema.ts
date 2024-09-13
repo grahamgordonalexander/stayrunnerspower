@@ -23,11 +23,15 @@ export class Room {
     @Prop({ required: true })
     min_price_per_night: number;
 
-    @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'City' })
-    city: City;
+    // @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'City' })
+    // city: City;
 
     @Prop({ required: true })
-    billing: string;
+    room_Amentities: string;
+ 
+
+    @Prop({ required: true})
+    RoomGoogleMapAddress: string;
 
     @Prop({ required: true, default: false })
     deleted: boolean;

@@ -16,11 +16,15 @@ export class CreateRoomDto {
     @IsNotEmpty()
     min_price_per_night: number;
 
-    @IsNotEmpty()
-    @IsString()
-    city: string;
+ 
 
     @IsNotEmpty()
     @IsString()
-    billing: string;
+    room_Amentities: string;
+
+    @IsNotEmpty()
+    @IsString()
+    RoomGoogleMapAddress: string;
+
+
 }

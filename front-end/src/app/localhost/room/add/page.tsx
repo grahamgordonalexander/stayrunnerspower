@@ -24,18 +24,7 @@ import { baseUrl } from "@/config/const";
 
 import { useLoadScript } from '@react-google-maps/api';
 
-// import { Libraries } from '@react-google-maps/api';
 const libraries: any = ['places'];
-// Define the types for place details
-interface PlaceDetails {
-  formattedAddress?: string;
-  // latitude?: number;
-  // longitude?: number;
-  // placeId?: string;
-  // plusCode?: string;
-}
-
-
 
 interface IFormInput {
   min_price_per_night: number;
@@ -43,17 +32,15 @@ interface IFormInput {
   pictures: FileList;
 }
 
-interface City {
-  _id: string;
-  city_name: string;
-}
+// interface City {
+//   _id: string;
+//   city_name: string;
+// }
 
 interface Payment_Option {
   label: string;
   value: string;
 }
-// const libraries: string[] = ['places'];
-
 
 const Page: React.FC = () => {
   const router = useRouter();
@@ -66,11 +53,10 @@ const Page: React.FC = () => {
 
   // google map
 
-  const [placeDetails, setPlaceDetails] = useState<PlaceDetails | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const { isLoaded } = useLoadScript({
-    googleMapsApiKey: 'AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKartNGg', // Replace with your API key
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_API_KEY || "", // Replace with your API key
     libraries,
   });
 
@@ -85,21 +71,6 @@ const Page: React.FC = () => {
     }
   }, [isLoaded]);
 
-  const handlePlaceSelected = (place: google.maps.places.PlaceResult) => {
-    if (place.formatted_address) {
-      console.log('Formatted Address:', place.formatted_address);
-    }
-
-    // Save place details in state
-    setPlaceDetails({
-      formattedAddress: place.formatted_address || undefined,
-      // latitude: place.geometry?.location.lat() || undefined,
-      // longitude: place.geometry?.location.lng() || undefined,
-      // placeId: place.place_id || undefined,
-      // plusCode: place.plus_code?.compound_code || 'N/A',
-    });
-  };
-
 
   // End ............ 
 
@@ -111,27 +82,39 @@ const Page: React.FC = () => {
   const [roomData, setRoomData] = useState({
     min_price_per_night: "",
     payment_option: "",
-    city: "",
-    billing: "",
+    // city: "",
+    room_Amentities: "",
     description: "",
+    RoomGoogleMapAddress : ""
   });
+
+  const handlePlaceSelected = (place: google.maps.places.PlaceResult) => {
+    if (place.formatted_address) {
+      console.log('Formatted Address:', place.formatted_address);
+      setRoomData(prevState => ({
+        ...prevState,
+        RoomGoogleMapAddress: place.formatted_address || '' // Use empty string as fallback
+      }));
+    }
+  };
 
   const [dataErrors, setDataErrors] = useState({
     min_price_per_night: "",
     payment_option: "",
-    city: "",
-    billing: "",
+    // city: "",
+    room_Amentities: "",
     description: "",
+    RoomGoogleMapAddress: "",
   });
 
-  const [cities, setCities] = useState<City[]>([]);
+  // const [cities, setCities] = useState<City[]>([]);
   const [paymentOptions, setPaymentOptions] = useState<Payment_Option[]>([]);
 
   const [options, setOptions] = useState<{
-    city: (typeof CITIES.options)[number];
+    // city: (typeof CITIES.options)[number];
     payment_option: (typeof PAYMENT_OPTIONS.options)[number];
   }>({
-    city: CITIES.options[0],
+    // city: CITIES.options[0],
     payment_option: PAYMENT_OPTIONS.options[0],
   });
 
@@ -140,18 +123,22 @@ const Page: React.FC = () => {
       return {
         min_price_per_night: roomData.min_price_per_night,
         payment_option: options.payment_option.value,
-        city: roomData.city,
-        billing: roomData.billing,
+        // city: roomData.city,
+        room_Amentities: roomData.room_Amentities,
         description: roomData.description,
+        RoomGoogleMapAddress: roomData.RoomGoogleMapAddress, // Add formattedAddress to roomData
+     
       };
     });
     setDataErrors(() => {
       return {
         min_price_per_night: "",
         payment_option: "",
-        city: "",
-        billing: "",
+        // city: "",
+        room_Amentities: "",
         description: "",
+        RoomGoogleMapAddress: "", 
+       // Clear formattedAddress on successful submission
       };
     });
 
@@ -167,17 +154,17 @@ const Page: React.FC = () => {
         ...dataErrors,
         payment_option: "Please select a valid payment option",
       });
-    } else if (isEmpty(roomData?.city)) {
-      toast.error("Please select a valid city");
+    } else if (isEmpty(roomData?.RoomGoogleMapAddress)) {
+      toast.error("Please enter a valid room address");
       setDataErrors({
         ...dataErrors,
-        city: "Please select a valid city",
+        RoomGoogleMapAddress: "Please enter a valid room address",
       });
-    } else if (isEmpty(roomData?.billing)) {
-      toast.error("Please enter a valid billing");
+    } else if (isEmpty(roomData?.room_Amentities)) {
+      toast.error("Please enter a valid room_Amentities");
       setDataErrors({
         ...dataErrors,
-        billing: "Please enter a valid billing",
+        room_Amentities: "Please enter a valid room_Amentities",
       });
     } else if (isEmpty(roomData?.description)) {
       toast.error("Please enter a valid description of room");
@@ -189,12 +176,16 @@ const Page: React.FC = () => {
       var formData = new FormData();
       formData.append("min_price_per_night", roomData.min_price_per_night);
       formData.append("payment_option", roomData.payment_option);
-      formData.append("city", roomData.city);
-      formData.append("billing", roomData.billing);
+      // formData.append("city", roomData.city);
+      formData.append("room_Amentities", roomData.room_Amentities);
       formData.append("description", roomData.description);
+      formData.append("RoomGoogleMapAddress", roomData.RoomGoogleMapAddress);
       Array.from(data.pictures).forEach((image) => {
         formData.append("images", image);
       });
+console.log("data---room data------>>", roomData);
+// console.log("placeDetails?.formattedAddress",placeDetails?.formattedAddress)
+console.log("formData--------->>",formData);
 
       try {
         setLoading(true);
@@ -241,15 +232,15 @@ const Page: React.FC = () => {
     }
   };
 
-  const getAllCities = async () => {
-    const res = await axios.get(baseUrl + "/cities");
-    if (res?.data?.data) {
-      setCities(res.data.data);
-    }
-  };
+  // const getAllCities = async () => {
+  //   const res = await axios.get(baseUrl + "/cities");
+  //   if (res?.data?.data) {
+  //     setCities(res.data.data);
+  //   }
+  // };
 
   useEffect(() => {
-    getAllCities();
+    // getAllCities();
     setPaymentOptions([
       {
         label: "Cash",
@@ -365,7 +356,7 @@ const Page: React.FC = () => {
                       )}
                     </div>
 
-                    <div className="relative flex flex-col gap-1 w-full">
+                    {/* <div className="relative flex flex-col gap-1 w-full">
                       <Label
                         className={`${dataErrors?.city && "text-red-600"}`}
                       >
@@ -427,7 +418,7 @@ const Page: React.FC = () => {
                           {dataErrors?.city}
                         </p>
                       )}
-                    </div>
+                    </div> */}
 
                     <div className="relative flex flex-col gap-1 w-full">
                       <Label
@@ -441,16 +432,12 @@ const Page: React.FC = () => {
                         style={{ width: '100%', padding: '10px', boxSizing: 'border-box' }}
                       />
 
-                      {placeDetails && (
+                      {/* {placeDetails && (
                         <div style={{ marginTop: '20px' }}>
                           <h2>Selected Place Details:</h2>
                           <p><strong>Address:</strong> {placeDetails.formattedAddress}</p>
-                          {/* <p><strong>Latitude:</strong> {placeDetails.latitude}</p>
-                              <p><strong>Longitude:</strong> {placeDetails.longitude}</p>
-                              <p><strong>Place ID:</strong> {placeDetails.placeId}</p>
-                          <p><strong>Plus Code:</strong> {placeDetails.plusCode}</p> */}
                         </div>
-                      )}
+                      )} */}
                     
                     </div>
 
@@ -478,22 +465,22 @@ const Page: React.FC = () => {
 
                     <div className="relative flex flex-col gap-1 w-full">
                       <Label
-                        className={`${dataErrors?.billing && "text-red-600"}`}
+                        className={`${dataErrors?.room_Amentities && "text-red-600"}`}
                       >
                         Room Amenities
 
                       </Label>
                       <Input
-                        name="billing"
-                        className={`${dataErrors?.billing && "border-red-600"}`}
+                        name="room_Amentities"
+                        className={`${dataErrors?.room_Amentities && "border-red-600"}`}
                         type="text"
-                        value={roomData?.billing}
+                        value={roomData?.room_Amentities}
                         onChange={handleChange}
                         placeholder="Breakfast, pool, safety box, room service etc…"
                       />
-                      {dataErrors?.billing && (
+                      {dataErrors?.room_Amentities && (
                         <p className="text-red-600 text-xs italic">
-                          {dataErrors?.billing}
+                          {dataErrors?.room_Amentities}
                         </p>
                       )}
                     </div>

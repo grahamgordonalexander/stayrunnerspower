@@ -35,7 +35,7 @@ interface Room {
     country: string;
     __v: number;
   };
-  billing: string;
+  room_Amentities: string;
   created_at: string;
   updated_at: string;
   __v: 0;
@@ -184,8 +184,8 @@ useEffect(() => {
                         <p className="text-sm">{item?.city?.city_name}</p>
                       </div>
                       <div className="flex">
-                        <p className="text-sm mr-2 text-gray-500">Billing:</p>
-                        <p className="text-sm">{item?.billing}</p>
+                        <p className="text-sm mr-2 text-gray-500">room_Amentities:</p>
+                        <p className="text-sm">{item?.room_Amentities}</p>
                       </div>
                     </CardContent>
                   </div>

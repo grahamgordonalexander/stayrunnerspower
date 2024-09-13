@@ -10,6 +10,7 @@ export class RoomsService {
   constructor(@InjectModel(Room.name) private roomModel: Model<Room>) {}
 
   async createRoom(id, filenames, createRoomDto: CreateRoomDto) {
+    //console.log("aaaaaaaaaaaaaadress" ,createRoomDto.description, "formate address", createRoomDto.RoomGoogleMapAddress)
     createRoomDto.localhost = id;
     createRoomDto.pic_urls = filenames;
 
@@ -38,8 +39,8 @@ export class RoomsService {
     room.available = true;
     room.payment_option = updateRoomDto.payment_option;
     room.min_price_per_night = updateRoomDto.min_price_per_night;
-    room.city = updateRoomDto.city;
-    room.billing = updateRoomDto.billing;
+    // room.city = updateRoomDto.city;
+    room.room_Amentities = updateRoomDto.room_Amentities;
     room.updated_at = new Date();
 
     const updated = await room.save();
@@ -51,7 +52,7 @@ export class RoomsService {
   async getLocalhostRooms(id) {
     const rooms = this.roomModel
       .find({ localhost: id, deleted: false })
-      .populate('city');
+      // .populate('city');
     return rooms;
   }
 

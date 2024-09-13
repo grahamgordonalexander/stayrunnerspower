@@ -60,6 +60,7 @@ export class RoomsController {
 
     const id: any = (req.user as any).id;
     const filenames = files.map((file) => file.filename);
+    console.log("controller create Room dto", createRoomDto.RoomGoogleMapAddress)
     const room = await this.roomsService.createRoom(
       id,
       filenames,

@@ -24,13 +24,14 @@ interface Room {
   available: boolean;
   payment_option: string;
   min_price_per_night: number;
-  city: {
-    _id: string;
-    city_name: string;
-    country: string;
-    __v: number;
-  };
-  billing: string;
+  RoomGoogleMapAddress: string;
+  // city: {
+  //   _id: string;
+  //   city_name: string;
+  //   country: string;
+  //   __v: number;
+  // };
+  room_Amentities: string;
   created_at: string;
   updated_at: string;
   __v: 0;
@@ -97,6 +98,7 @@ const Page = () => {
     getMyRooms();
   }, []);
 
+  console.log("get room data ",myRooms);
   return (
     <div className="bg-slate-50 grainy-light">
       <MaxWidthWrapper>
@@ -184,12 +186,12 @@ const Page = () => {
                         <p className="text-sm">{item?.payment_option}</p>
                       </div>
                       <div className="flex">
-                        <p className="text-sm mr-2 text-gray-500">City:</p>
-                        <p className="text-sm">{item?.city?.city_name}</p>
+                        <p className="text-sm mr-2 text-gray-500">Room Address:</p>
+                        <p className="text-sm">{item?.RoomGoogleMapAddress}</p>
                       </div>
                       <div className="flex">
-                        <p className="text-sm mr-2 text-gray-500">Room Service:</p>
-                        <p className="text-sm">{item?.billing}</p>
+                        <p className="text-sm mr-2 text-gray-500">Room Amentities:</p>
+                        <p className="text-sm">{item?.room_Amentities}</p>
                       </div>
                       <div className="mt-4">
                         <Link

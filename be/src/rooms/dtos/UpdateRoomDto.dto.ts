@@ -19,11 +19,11 @@ export class UpdateRoomDto {
     @IsNotEmpty()
     min_price_per_night: number;
 
-    @IsNotEmpty()
-    @IsString()
-    city: City;
+    // @IsNotEmpty()
+    // @IsString()
+    // city: City;
 
     @IsNotEmpty()
     @IsString()
-    billing: string;
+    room_Amentities: string;
 }

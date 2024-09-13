@@ -251,7 +251,7 @@ export default function Home() {
                     negotiate rate
                   </li>
                   <li className="flex gap-1.5 items-center text-left">
-                    <Check className="h-5 w-5 shrink-0 text-green-600" />5 year
+                    <Check className="h-5 w-5 shrink-0 text-green-600" />
                     pay on check-in
                   </li>
                   <li className="flex gap-1.5 items-center text-left">

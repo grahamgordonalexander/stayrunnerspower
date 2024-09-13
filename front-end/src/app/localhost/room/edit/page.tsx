@@ -45,7 +45,7 @@ const EditPage: React.FC = () => {
     payment_option: "",
     pic_urls: [],
     city: "",
-    billing: "",
+    room_Amentities: "",
     description: "",
   });
 
@@ -53,7 +53,7 @@ const EditPage: React.FC = () => {
     min_price_per_night: "",
     payment_option: "",
     city: "",
-    billing: "",
+    room_Amentities: "",
     description: "",
   });
 
@@ -68,7 +68,7 @@ const EditPage: React.FC = () => {
         min_price_per_night: "",
         payment_option: "",
         city: "",
-        billing: "",
+        room_Amentities: "",
         description: "",
       };
     });
@@ -91,11 +91,11 @@ const EditPage: React.FC = () => {
         ...dataErrors,
         city: "Please select a valid city",
       });
-    } else if (isEmpty(roomData?.billing)) {
-      toast.error("Please enter a valid billing");
+    } else if (isEmpty(roomData?.room_Amentities)) {
+      toast.error("Please enter a valid room_Amentities");
       setDataErrors({
         ...dataErrors,
-        billing: "Please enter a valid billing",
+        room_Amentities: "Please enter a valid room_Amentities",
       });
     } else if (isEmpty(roomData?.description)) {
       toast.error("Please enter a valid description of room");
@@ -108,7 +108,7 @@ const EditPage: React.FC = () => {
       formData.append("min_price_per_night", roomData.min_price_per_night);
       formData.append("payment_option", roomData.payment_option);
       formData.append("city", roomData.city);
-      formData.append("billing", roomData.billing);
+      formData.append("room_Amentities", roomData.room_Amentities);
       formData.append("description", roomData.description);
       if (imageFiles) {
         Array.from(imageFiles).forEach((image) => {
@@ -370,21 +370,21 @@ const EditPage: React.FC = () => {
 
                     <div className="relative flex flex-col gap-1 w-full">
                       <Label
-                        className={`${dataErrors?.billing && "text-red-600"}`}
+                        className={`${dataErrors?.room_Amentities && "text-red-600"}`}
                       >
                     Room Service
                       </Label>
                       <Input
-                        name="billing"
-                        className={`${dataErrors?.billing && "border-red-600"}`}
+                        name="room_Amentities"
+                        className={`${dataErrors?.room_Amentities && "border-red-600"}`}
                         type="text"
-                        value={roomData?.billing}
+                        value={roomData?.room_Amentities}
                         onChange={handleChange}
                         placeholder="24/7"
                       />
-                      {dataErrors?.billing && (
+                      {dataErrors?.room_Amentities && (
                         <p className="text-red-600 text-xs italic">
-                          {dataErrors?.billing}
+                          {dataErrors?.room_Amentities}
                         </p>
                       )}
                     </div>
