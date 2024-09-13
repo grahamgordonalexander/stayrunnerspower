@@ -247,9 +247,13 @@ console.log("formData--------->>",formData);
         value: "Cash",
       },
       {
-        label: "Credit Card",
-        value: "Credit Card",
+        label: "credit/debit card",
+        value: "credit/debit card",
       },
+      {
+        label: "crypto",
+        value: "crypto",
+      }
     ]);
   }, []);
 
