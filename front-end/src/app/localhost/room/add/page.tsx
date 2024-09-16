@@ -76,6 +76,8 @@ const Page: React.FC = () => {
 
 
   const [images, setImages] = useState<string[]>([]);
+  const [files, setFiles] = useState<File[]>([]);
+
 
   const [loading, setLoading] = useState(false);
 
@@ -180,13 +182,14 @@ const Page: React.FC = () => {
       formData.append("room_Amentities", roomData.room_Amentities);
       formData.append("description", roomData.description);
       formData.append("RoomGoogleMapAddress", roomData.RoomGoogleMapAddress);
-      Array.from(data.pictures).forEach((image) => {
-        formData.append("images", image);
+      files.forEach((file) => {
+        formData.append('images', file);
       });
-console.log("data---room data------>>", roomData);
+// console.log("data---room data------>>", roomData);
 // console.log("placeDetails?.formattedAddress",placeDetails?.formattedAddress)
-console.log("formData--------->>",formData);
-
+// console.log("formData--------->>",formData);
+console.log("files",files)
+console.log("images",images)
       try {
         setLoading(true);
         const res: AxiosResponse = await axios.post(
@@ -222,6 +225,48 @@ console.log("formData--------->>",formData);
   };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = event.target.files;
+    if (selectedFiles) {
+      const fileArray = Array.from(selectedFiles);
+      
+      // Create blob URLs for previews
+      const imagePreviews = fileArray.map((file) => URL.createObjectURL(file));
+      
+      // Update state with new files and their previews
+      setImages((prevImages) => prevImages.concat(imagePreviews));
+      setFiles((prevFiles) => prevFiles.concat(fileArray));
+  
+      // Cleanup blob URLs when component unmounts or files are updated
+      return () => {
+        imagePreviews.forEach((url) => URL.revokeObjectURL(url));
+      };
+    }
+  };
+  
+  const handleImageUploadd = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = event.target.files;
+    if (selectedFiles) {
+      const fileArray = Array.from(selectedFiles);
+      const imagePreviews = fileArray.map((file) => URL.createObjectURL(file));
+
+      setImages((prevImages) => prevImages.concat(imagePreviews));
+      setFiles(fileArray);
+
+      // Clean up object URLs when the component unmounts or when new files are selected
+      return () => {
+        imagePreviews.forEach((url) => URL.revokeObjectURL(url));
+      };
+    }
+  };
+
+  useEffect(() => {
+    // Clean up object URLs when the component unmounts or images change
+    return () => {
+      images.forEach((image) => URL.revokeObjectURL(image));
+    };
+  }, [images]);
+
+  const handleImageUpload1 = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files) {
       const fileArray = Array.from(files).map((file) =>
@@ -500,9 +545,9 @@ console.log("formData--------->>",formData);
                             required: "Pictures are required",
                           })}
                           type="file"
-                          accept="image/*"
-                          multiple
-                          onChange={handleImageUpload}
+                        accept="image/*"
+                        multiple
+                        onChange={handleImageUpload}
                         />
                         {errors.pictures && (
                           <p className="text-red-600 text-xs italic">

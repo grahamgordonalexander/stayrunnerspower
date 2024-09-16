@@ -54,6 +54,8 @@ export class RoomsController {
     @UploadedFiles() files: Array<Express.Multer.File>,
     @Res() res,
   ) {
+    console.log("create room dto", createRoomDto.RoomGoogleMapAddress)
+    console.log("files", files)
     if (!files || files.length === 0) {
       throw new BadRequestException('At least one image is required');
     }
@@ -61,6 +63,7 @@ export class RoomsController {
     const id: any = (req.user as any).id;
     const filenames = files.map((file) => file.filename);
     console.log("controller create Room dto", createRoomDto.RoomGoogleMapAddress)
+    console.log("filenames", filenames)
     const room = await this.roomsService.createRoom(
       id,
       filenames,

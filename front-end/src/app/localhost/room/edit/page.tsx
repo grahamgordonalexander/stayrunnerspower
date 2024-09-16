@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useRef} from "react";
 import axios, { AxiosResponse } from "axios";
 import { useSearchParams } from "next/navigation";
 import MaxWidthWrapper from "@/components/MaxWidthWrapper";
@@ -20,6 +20,11 @@ import Link from "next/link";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { baseUrl } from "@/config/const";
+
+
+import { useLoadScript } from '@react-google-maps/api';
+
+const libraries: any = ['places'];
 
 interface City {
   _id: string;
@@ -44,17 +49,55 @@ const EditPage: React.FC = () => {
     min_price_per_night: "",
     payment_option: "",
     pic_urls: [],
-    city: "",
+    // city: "",
     room_Amentities: "",
     description: "",
+    RoomGoogleMapAddress : ""
   });
+
+
+
+
+    // google map
+
+    const handlePlaceSelected = (place: google.maps.places.PlaceResult) => {
+      if (place.formatted_address) {
+        console.log('Formatted Address:', place.formatted_address);
+        setRoomData(prevState => ({
+          ...prevState,
+          RoomGoogleMapAddress: place.formatted_address || '' // Use empty string as fallback
+        }));
+      }
+    };
+
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    const { isLoaded } = useLoadScript({
+      googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_API_KEY || "", // Replace with your API key
+      libraries,
+    });
+  
+    useEffect(() => {
+      if (isLoaded && inputRef.current) {
+        const autocomplete = new window.google.maps.places.Autocomplete(inputRef.current);
+  
+        autocomplete.addListener('place_changed', () => {
+          const place = autocomplete.getPlace();
+          handlePlaceSelected(place);
+        });
+      }
+    }, [isLoaded]);
+  
+  
+    // End ............ 
 
   const [dataErrors, setDataErrors] = useState({
     min_price_per_night: "",
     payment_option: "",
-    city: "",
+    // city: "",
     room_Amentities: "",
     description: "",
+    RoomGoogleMapAddress: "",
   });
 
   const [cities, setCities] = useState<City[]>([]);
@@ -67,9 +110,10 @@ const EditPage: React.FC = () => {
       return {
         min_price_per_night: "",
         payment_option: "",
-        city: "",
+        // city: "",
         room_Amentities: "",
         description: "",
+        RoomGoogleMapAddress: "", 
       };
     });
 
@@ -85,11 +129,11 @@ const EditPage: React.FC = () => {
         ...dataErrors,
         payment_option: "Please select a valid payment option",
       });
-    } else if (isEmpty(roomData?.city)) {
-      toast.error("Please select a valid city");
+    } else if (isEmpty(roomData?.RoomGoogleMapAddress)) {
+      toast.error("Please enter a valid room address");
       setDataErrors({
         ...dataErrors,
-        city: "Please select a valid city",
+        RoomGoogleMapAddress: "Please enter a valid room address",
       });
     } else if (isEmpty(roomData?.room_Amentities)) {
       toast.error("Please enter a valid room_Amentities");
@@ -107,9 +151,10 @@ const EditPage: React.FC = () => {
       var formData = new FormData();
       formData.append("min_price_per_night", roomData.min_price_per_night);
       formData.append("payment_option", roomData.payment_option);
-      formData.append("city", roomData.city);
+      // formData.append("city", roomData.city);
       formData.append("room_Amentities", roomData.room_Amentities);
       formData.append("description", roomData.description);
+      formData.append("RoomGoogleMapAddress", roomData.RoomGoogleMapAddress);
       if (imageFiles) {
         Array.from(imageFiles).forEach((image) => {
           formData.append("images", image);
@@ -195,10 +240,17 @@ const EditPage: React.FC = () => {
         label: "Credit Card",
         value: "Credit Card",
       },
+      {
+        label: "crypto",
+        value: "crypto",
+      }
     ]);
     getRoom(room_id);
   }, []);
+  
 
+
+  console.log("view state------------", roomData);
   return (
     <div className="bg-slate-50 grainy-light">
       <MaxWidthWrapper>
@@ -304,7 +356,7 @@ const EditPage: React.FC = () => {
                       )}
                     </div>
 
-                    <div className="relative flex flex-col gap-1 w-full">
+                    {/* <div className="relative flex flex-col gap-1 w-full">
                       <Label
                         className={`${dataErrors?.city && "text-red-600"}`}
                       >
@@ -366,27 +418,30 @@ const EditPage: React.FC = () => {
                           {dataErrors?.city}
                         </p>
                       )}
-                    </div>
+                    </div> */}
 
                     <div className="relative flex flex-col gap-1 w-full">
                       <Label
-                        className={`${dataErrors?.room_Amentities && "text-red-600"}`}
                       >
-                    Room Service
+                        Room Address
                       </Label>
                       <Input
-                        name="room_Amentities"
-                        className={`${dataErrors?.room_Amentities && "border-red-600"}`}
+                        ref={inputRef}
+                        name="RoomGoogleMapAddress" // Ensure name matches state property
                         type="text"
-                        value={roomData?.room_Amentities}
-                        onChange={handleChange}
-                        placeholder="24/7"
+                        value={roomData.RoomGoogleMapAddress} // Bind value to state
+                        onChange={handleChange} // Handle user input changes
+                        placeholder="Enter a location"
+                        style={{ width: '100%', padding: '10px', boxSizing: 'border-box' }}
                       />
-                      {dataErrors?.room_Amentities && (
-                        <p className="text-red-600 text-xs italic">
-                          {dataErrors?.room_Amentities}
-                        </p>
-                      )}
+
+                      {/* {placeDetails && (
+                        <div style={{ marginTop: '20px' }}>
+                          <h2>Selected Place Details:</h2>
+                          <p><strong>Address:</strong> {placeDetails.formattedAddress}</p>
+                        </div>
+                      )} */}
+                    
                     </div>
 
                     <div className="relative flex flex-col gap-1 w-full">
@@ -413,6 +468,26 @@ const EditPage: React.FC = () => {
                       )}
                     </div>
 
+                    <div className="relative flex flex-col gap-1 w-full">
+                      <Label
+                        className={`${dataErrors?.room_Amentities && "text-red-600"}`}
+                      >
+                    Room Amentities
+                      </Label>
+                      <Input
+                        name="room_Amentities"
+                        className={`${dataErrors?.room_Amentities && "border-red-600"}`}
+                        type="text"
+                        value={roomData?.room_Amentities}
+                        onChange={handleChange}
+                        placeholder="Breakfast, pool, safety box, room service etc…"
+                      />
+                      {dataErrors?.room_Amentities && (
+                        <p className="text-red-600 text-xs italic">
+                          {dataErrors?.room_Amentities}
+                        </p>
+                      )}
+                    </div>
                     <div className="relative flex flex-col gap-1 w-full">
                       <div>
                         <Label>Upload Pictures</Label>

@@ -41,6 +41,7 @@ export class RoomsService {
     room.min_price_per_night = updateRoomDto.min_price_per_night;
     // room.city = updateRoomDto.city;
     room.room_Amentities = updateRoomDto.room_Amentities;
+    room.RoomGoogleMapAddress = updateRoomDto.RoomGoogleMapAddress;
     room.updated_at = new Date();
 
     const updated = await room.save();

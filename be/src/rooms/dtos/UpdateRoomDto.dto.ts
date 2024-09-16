@@ -26,4 +26,8 @@ export class UpdateRoomDto {
     @IsNotEmpty()
     @IsString()
     room_Amentities: string;
+
+    @IsNotEmpty()
+    @IsString()
+    RoomGoogleMapAddress: string;
 }
