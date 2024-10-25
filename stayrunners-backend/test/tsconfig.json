@@ -1,0 +1,12 @@
+//stayrunnerspower/stayrunners-backend/test/tsconfig.json
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "types": ["jest", "node"],
+    "esModuleInterop": true,
+    "strictNullChecks": true,
+    "strict": true
+  },
+  "include": ["./**/*.ts"],  // Only includes test files
+  "exclude": ["node_modules"]
+}

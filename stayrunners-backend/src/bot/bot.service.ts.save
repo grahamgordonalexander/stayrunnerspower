@@ -1,0 +1,61 @@
+// src/bot/bot.service.ts
+import { Injectable } from '@nestjs/common';
+import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { Server } from 'socket.io';
+import { ConfigService } from '@nestjs/config';
+
+@Injectable()
+export class BotService {
+  @WebSocketServer()
+  server: Server;
+
+  async handleCustomerRequest(data: any) {
+    try {
+      const prompt = `
+        System: You are a delivery service negotiation bot. 
+        Current Request: ${JSON.stringify(data)}
+        Process: Handle the customer request for delivery service.
+      `;
+
+      // Groq API call would go here
+      const response = await this.processWithGroq(prompt);
+      
+      // Emit to relevant socket room
+      this.server.to(data.customerId).emit('botResponse', response);
+      return response;
+    } catch (error) {
+      console.error('Error in handleCustomerRequest:', error);
+      throw error;
+    }
+  }
+
+  async handleRunnerResponse(data: any) {
+    try {
+      const prompt = `
+        System: You are a delivery service negotiation bot.
+        Current Response: ${JSON.stringify(data)}
+        Process: Handle the runner's response to a delivery request.
+      `;
+
+      const response = await this.processWithGroq(prompt);
+      
+      // Emit responses to both parties
+      this.server.to(data.runnerId).emit('botResponse', response);
+      this.server.to(data.customerId).emit('runnerResponse', response);
+      return response;
+    } catch (error) {
+      console.error('Error in handleRunnerResponse:', error);
+      throw error;
+    }
+  }
+
+  private async processWithGroq(prompt: string) {
+    // Groq API integration would go here
+    // This is a placeholder for actual Groq API calls
+    return {
+      response: "Processed by Groq",
+      timestamp: new Date(),
+      status: 'success'
+    };
+  }
+}
