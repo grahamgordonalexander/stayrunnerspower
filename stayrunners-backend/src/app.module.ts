@@ -5,6 +5,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { BotModule } from './bot/bot.module';
 import { WebsocketModule } from './websocket/websocket.module';
+import appConfig from './config/app.config';
+import groqConfig from './config/groq.config';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -27,7 +30,7 @@ import { WebsocketModule } from './websocket/websocket.module';
       inject: [ConfigService],
     }),
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'src/public'),
+      rootPath: join(__dirname, '..', 'src/public/views'),
       serveRoot: '/',
       serveStaticOptions: {
         index: ['views/index.html'],
@@ -36,5 +39,6 @@ import { WebsocketModule } from './websocket/websocket.module';
     BotModule,
     WebsocketModule,
   ],
+  controllers: [AppController],
 })
 export class AppModule {}

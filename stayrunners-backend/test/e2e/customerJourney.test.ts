@@ -1,16 +1,18 @@
+// test/e2e/customerJourney.test.ts
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from '../../src/app.module';
 import { INestApplication } from '@nestjs/common';
+import { NestExpressApplication } from '@nestjs/platform-express'; // Add this
 import * as puppeteer from 'puppeteer';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-
-jest.setTimeout(90000);
+import { join } from 'path';
+import { TestConfigModule } from '../config/test.config';
 
 describe('Customer Journey E2E Tests', () => {
-  let app: INestApplication;
+  let app: NestExpressApplication; // Change this from INestApplication
   let browser: puppeteer.Browser;
-  let page: puppeteer.Page;
+  let page: puppeteer.Page; // Declare at the describe level
   let mongod: MongoMemoryServer;
 
   beforeAll(async () => {
@@ -19,6 +21,7 @@ describe('Customer Journey E2E Tests', () => {
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [
+        TestConfigModule,
         MongooseModule.forRootAsync({
           useFactory: () => ({
             uri: mongoUri,
@@ -28,7 +31,13 @@ describe('Customer Journey E2E Tests', () => {
       ],
     }).compile();
 
-    app = moduleFixture.createNestApplication();
+    // Create specifically as NestExpressApplication
+    app = moduleFixture.createNestApplication<NestExpressApplication>();
+    
+    // Now these methods will be recognized
+    app.useStaticAssets(join(__dirname, '../../src/public/static'));
+    app.setBaseViewsDir(join(__dirname, '../../src/public/views'));
+    
     await app.init();
     await app.listen(3333);
 
@@ -40,7 +49,25 @@ describe('Customer Journey E2E Tests', () => {
         '--disable-dev-shm-usage'
       ]
     });
+
     page = await browser.newPage();
+  });
+
+  beforeEach(async () => {
+    try {
+      const response = await page.goto('http://localhost:3333', {
+        waitUntil: 'networkidle0',
+        timeout: 30000,
+      });
+      
+      // Debug information
+      console.log('Page status:', response.status());
+      const content = await page.content();
+      console.log('Page content:', content.substring(0, 200) + '...'); // Show first 200 chars
+      
+    } catch (error) {
+      console.error('Navigation error:', error);
+    }
   });
 
   afterAll(async () => {
@@ -49,24 +76,12 @@ describe('Customer Journey E2E Tests', () => {
     await mongod?.stop();
   });
 
-  beforeEach(async () => {
-    try {
-      await page.goto('http://localhost:3333', {
-        waitUntil: 'networkidle0',
-        timeout: 30000,
-      });
-    } catch (error) {
-      console.error('Navigation error:', error);
-    }
-  });
-
   it('should show login form', async () => {
-    // Wait for form to be rendered
-    await page.waitForSelector('form', { timeout: 5000 });
+    await page.waitForSelector('[data-testid="login-form"]', { timeout: 5000 });
     
-    const form = await page.$('form');
-    const emailInput = await page.$('input[type="email"]');
-    const passwordInput = await page.$('input[type="password"]');
+    const form = await page.$('[data-testid="login-form"]');
+    const emailInput = await page.$('[data-testid="email-input"]');
+    const passwordInput = await page.$('[data-testid="password-input"]');
     
     expect(form).toBeTruthy();
     expect(emailInput).toBeTruthy();
@@ -74,22 +89,21 @@ describe('Customer Journey E2E Tests', () => {
   }, 30000);
 
   it('should validate email input', async () => {
-    const emailSelector = 'input[type="email"]';
-    await page.waitForSelector(emailSelector, { timeout: 5000 });
+    await page.waitForSelector('[data-testid="email-input"]', { timeout: 5000 });
     
-    await page.type(emailSelector, 'test@example.com');
-    const emailInput = await page.$(emailSelector);
+    await page.type('[data-testid="email-input"]', 'test@example.com');
+    const emailInput = await page.$('[data-testid="email-input"]');
+    
     expect(emailInput).toBeTruthy();
   }, 30000);
 
   it('should handle form submission', async () => {
-    await page.waitForSelector('form', { timeout: 5000 });
+    await page.waitForSelector('[data-testid="login-form"]', { timeout: 5000 });
     
-    await page.type('input[type="email"]', 'test@example.com');
-    await page.type('input[type="password"]', 'password123');
-    await page.click('button[type="submit"]');
+    await page.type('[data-testid="email-input"]', 'test@example.com');
+    await page.type('[data-testid="password-input"]', 'password123');
+    await page.click('[data-testid="submit-button"]');
     
-    // Wait for navigation or network idle
     await page.waitForNetworkIdle({ timeout: 5000 }).catch(() => {});
   }, 30000);
 });
